@@ -30,13 +30,13 @@ namespace WritelyApi.Entries
             return null;
         }
 
-        public async Task<EntryDto> Update(EntryDto entry)
+        public async Task<EntryDto> Update(int id, EntryDto entry)
         {
             var journal = await FindJournalById(entry.JournalId);
 
             if (journal != null)
             {
-                var existingEntry = journal.Entries.FirstOrDefault(e => e.Id == entry.Id);
+                var existingEntry = journal.Entries.FirstOrDefault(e => e.Id == id);
                 existingEntry.UpdateFromDto(entry);
                 journal.Update();
                 await _context.SaveChangesAsync();
