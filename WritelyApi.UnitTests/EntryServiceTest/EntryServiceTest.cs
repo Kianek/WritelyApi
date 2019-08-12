@@ -11,97 +11,125 @@ namespace WritelyApi.UnitTests.EntryServiceTest
 {
     public class EntryServiceTest
     {
-        private readonly DbContextOptions<AppDbContext> _options;
-
-        public EntryServiceTest()
+        public class AddEntryTest
         {
-            _options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase("EntryServiceTestDb")
-                .Options;
-        }
+            private readonly DbContextOptions<AppDbContext> _options;
 
-        [Fact]
-        public async Task CanAddNewEntryToJournal()
-        {
-            using (var context = new AppDbContext(_options))
+            public AddEntryTest()
             {
-                var journal = new Journal { Title = "My Journal" };
-                context.Journals.Add(journal);
-                await context.SaveChangesAsync();
-                var service = new EntryService(context);
+                _options = new DbContextOptionsBuilder<AppDbContext>()
+                    .UseInMemoryDatabase("EntryServiceTestDb")
+                    .Options;
+            }
 
-                var addedEntry = await service.Add(new EntryCreationDto
+            [Fact]
+            public async Task CanAddNewEntryToJournal()
+            {
+                using (var context = new AppDbContext(_options))
                 {
-                    Title = "My Entry",
-                    Tags = "tag1,tag2",
-                    Body = "My first entry",
-                    JournalId = journal.Id
-                });
+                    var journal = new Journal { Title = "My Journal" };
+                    context.Journals.Add(journal);
+                    await context.SaveChangesAsync();
+                    var service = new EntryService(context);
 
-                addedEntry.Should().BeOfType<EntryDto>().And.NotBeNull();
-            }
-        }
-
-        [Fact]
-        public async Task CanUpdateExistingEntry()
-        {
-            using (var context = new AppDbContext(_options))
-            {
-                var service = new EntryService(context);
-                var journal = new Journal { Id = 1, Title = "My Journal" };
-                var entry =
-                    new Entry
+                    var addedEntry = await service.Add(new EntryCreationDto
                     {
-                        Id = 1,
-                        Title = "Original Entry",
-                        Tags = "tag",
-                        Body = "Body",
-                        JournalId = journal.Id
-                    };
-                var updatedEntry =
-                    new EntryDto
-                    {
-                        Id = entry.Id,
-                        Title = "New Title",
+                        Title = "My Entry",
                         Tags = "tag1,tag2",
-                        Body = "New Body",
+                        Body = "My first entry",
                         JournalId = journal.Id
-                    };
+                    });
 
-                journal.Entries = new List<Entry>();
-                journal.Entries.Add(entry);
-
-                context.Journals.Add(journal);
-                await context.SaveChangesAsync();
-
-                var result = await service.Update(updatedEntry);
-                result.Title.Should().Be(updatedEntry.Title);
+                    addedEntry.Should().BeOfType<EntryDto>().And.NotBeNull();
+                }
             }
         }
 
-        [Fact]
-        public async Task CanDeleteExistingEntry()
+        public class UpdateEntryTest
         {
-            using (var context = new AppDbContext(_options))
+            private readonly DbContextOptions<AppDbContext> _options;
+
+            public UpdateEntryTest()
             {
-                var service = new EntryService(context);
-                var entry = new Entry { Title = "Delete Me", Body = "Boring stuff" };
-                var journal =
-                    new Journal
-                    {
-                        Id = 1,
-                        Title = "My Journal",
-                        Entries = new List<Entry>()
-                    };
+                _options = new DbContextOptionsBuilder<AppDbContext>()
+                    .UseInMemoryDatabase("EntryServiceTestDb")
+                    .Options;
+            }
 
-                journal.Entries.Add(entry);
-                context.Journals.Add(journal);
-                await context.SaveChangesAsync();
+            [Fact]
+            public async Task CanUpdateExistingEntry()
+            {
+                using (var context = new AppDbContext(_options))
+                {
+                    var service = new EntryService(context);
+                    var journal = new Journal { Id = 1, Title = "My Journal" };
+                    var entry =
+                        new Entry
+                        {
+                            Id = 1,
+                            Title = "Original Entry",
+                            Tags = "tag",
+                            Body = "Body",
+                            JournalId = journal.Id
+                        };
+                    var updatedEntry =
+                        new EntryDto
+                        {
+                            Id = entry.Id,
+                            Title = "New Title",
+                            Tags = "tag1,tag2",
+                            Body = "New Body",
+                            JournalId = journal.Id
+                        };
 
-                var result =
-                    await service.Delete(new EntryDeletionDto { EntryId = entry.Id, JournalId = journal.Id });
+                    journal.Entries = new List<Entry>();
+                    journal.Entries.Add(entry);
 
-                result.Should().BeGreaterThan(0, "because more than one object was updated");
+                    context.Journals.Add(journal);
+                    await context.SaveChangesAsync();
+
+                    var result = await service.Update(entry.Id, updatedEntry);
+                    result.Title.Should().Be(updatedEntry.Title);
+                }
+            }
+        }
+
+        public class DeleteEntryTest
+        {
+
+            private readonly DbContextOptions<AppDbContext> _options;
+
+            public DeleteEntryTest()
+            {
+                _options = new DbContextOptionsBuilder<AppDbContext>()
+                    .UseInMemoryDatabase("EntryServiceTestDb")
+                    .Options;
+            }
+
+            [Fact]
+            public async Task CanDeleteExistingEntry()
+            {
+                using (var context = new AppDbContext(_options))
+                {
+                    var service = new EntryService(context);
+                    var entry = new Entry { Title = "Delete Me", Body = "Boring stuff" };
+                    var journal =
+                        new Journal
+                        {
+                            Id = 1,
+                            Title = "My Journal",
+                            Entries = new List<Entry>()
+                        };
+
+                    journal.Entries.Add(entry);
+                    context.Journals.Add(journal);
+                    await context.SaveChangesAsync();
+
+                    var result =
+                        await service.Delete(new EntryDeletionDto { EntryId = entry.Id, JournalId = journal.Id });
+
+                    result.Should().BeGreaterThan(0, "because more than one object was updated");
+                }
             }
         }
     }
