@@ -6,7 +6,7 @@ namespace WritelyApi.Entries
     {
         Task<EntryDto> Add(EntryCreationDto entry);
 
-        Task<EntryDto> Update(EntryDto entry);
+        Task<EntryDto> Update(int id, EntryDto entry);
 
         Task<int> Delete(EntryDeletionDto dto);
     }
