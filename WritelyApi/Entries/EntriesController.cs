@@ -39,11 +39,11 @@ namespace WritelyApi.Entries
         // Update Entry
         // PUT - api/entries/{id}
         [HttpPut]
-        public async Task<IActionResult> UpdateEntry(EntryDto dto)
+        public async Task<IActionResult> UpdateEntry(int id, [FromBody] EntryDto dto)
         {
             if (ModelState.IsValid)
             {
-                var result = await _service.Update(dto);
+                var result = await _service.Update(id, dto);
                 if (result != null) return Ok(result);
 
                 return BadRequest(new { Message = "Unable to update entry" });
